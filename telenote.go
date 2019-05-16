@@ -16,7 +16,7 @@ type Notifier struct {
 }
 
 // NewNotifier returns a new Notifier instance initialized with
-// the given access token.
+// the given bot token.
 func NewNotifier(token string) *Notifier {
 	return &Notifier{
 		Token:  token,
@@ -24,7 +24,7 @@ func NewNotifier(token string) *Notifier {
 	}
 }
 
-// WithToken sets the access token and returns the Notifier structure.
+// WithToken sets the bot token and returns the Notifier structure.
 func (n *Notifier) WithToken(token string) *Notifier {
 	n.Token = token
 	return n
@@ -36,18 +36,17 @@ func (n *Notifier) WithClient(client *http.Client) *Notifier {
 	return n
 }
 
-// Notify send the notification and returns an error on failure.
-func (n *Notifier) Notify(chatId string, text string) error {
+// Notify sends the text to the given chat and returns an error on failure.
+func (n *Notifier) Notify(chatId int64, text string) error {
 	if len(n.Token) == 0 {
-		return errors.New("access token not set")
-	}
-	if len(text) == 0 {
+		return errors.New("bot token not set")
+	} else if len(text) == 0 {
 		return errors.New("empty text")
 	}
 
 	uri := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", n.Token)
 	data := url.Values{}
-	data.Set("chat_id", chatId)
+	data.Set("chat_id", fmt.Sprintf("%d", chatId))
 	data.Set("text", text)
 	data.Set("parse_mode", "Markdown")
 	data.Set("disable_web_page_preview", "false")
