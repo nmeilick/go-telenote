@@ -23,6 +23,19 @@ func main() {
 				EnvVars: []string{"TOKEN"},
 				Usage:   "Telegram bot token",
 			},
+			&cli.BoolFlag{
+				Name:    "no-preview",
+				Aliases: []string{"n"},
+				EnvVars: []string{"NO_PREVIEW"},
+				Usage:   "Disable automatic link preview",
+			},
+			&cli.StringFlag{
+				Name:    "mode",
+				Aliases: []string{"m"},
+				EnvVars: []string{"MODE"},
+				Value:   "MarkdownV2",
+				Usage:   "Parse mode (Markdown, MarkdownV2, HTML)",
+			},
 		},
 		Action: sendMessage,
 	}
@@ -45,6 +58,14 @@ func sendMessage(ctx *cli.Context) error {
 	token := ctx.String("token")
 	if token == "" {
 		fail("Please specify the telegram bot token (-t, see -h for help)!")
+	}
+
+	var opts []telenote.Option
+	if ctx.Bool("no-preview") {
+		opts = append(opts, telenote.NoPreview())
+	}
+	if s := ctx.String("mode"); s != "" {
+		opts = append(opts, telenote.ParseMode(s))
 	}
 
 	var text string
@@ -75,7 +96,7 @@ func sendMessage(ctx *cli.Context) error {
 
 	notifier := telenote.NewNotifier(token)
 	for _, id := range ids {
-		if err := notifier.Notify(id, text); err != nil {
+		if err := notifier.Notify(id, text, opts...); err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to send message to %d: %s\n", id, err)
 			rc = 1
 		}

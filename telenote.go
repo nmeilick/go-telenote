@@ -38,7 +38,14 @@ func (n *Notifier) WithClient(client *http.Client) *Notifier {
 }
 
 // Notify sends the text to the given chat and returns an error on failure.
-func (n *Notifier) Notify(chatId int64, text string) error {
+func (n *Notifier) Notify(chatId int64, text string, opts ...Option) error {
+	options := NewOptions()
+	for _, o := range opts {
+		if err := o(options); err != nil {
+			return err
+		}
+	}
+
 	if len(n.Token) == 0 {
 		return errors.New("bot token not set")
 	} else if len(text) == 0 {
@@ -49,8 +56,8 @@ func (n *Notifier) Notify(chatId int64, text string) error {
 	data := url.Values{}
 	data.Set("chat_id", fmt.Sprintf("%d", chatId))
 	data.Set("text", text)
-	data.Set("parse_mode", "Markdown")
-	data.Set("disable_web_page_preview", "false")
+	data.Set("parse_mode", options.ParseMode)
+	data.Set("disable_web_page_preview", fmt.Sprintf("%v", options.DisableWebPreview))
 
 	client := n.Client
 	if client == nil {
