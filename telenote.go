@@ -3,6 +3,7 @@ package telenote
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -63,8 +64,11 @@ func (n *Notifier) Notify(chatId int64, text string) error {
 	if err != nil {
 		return err
 	}
+	body, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+
 	if res.StatusCode != 200 {
-		return fmt.Errorf("unexpected status: %s", res.Status)
+		return fmt.Errorf("unexpected status: %s: %s", res.Status, string(body))
 	}
 	return nil
 }
