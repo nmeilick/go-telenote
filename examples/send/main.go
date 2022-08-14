@@ -11,11 +11,17 @@ import (
 )
 
 const (
-	VERSION = "1.0.0"
+	VERSION = "1.0.1"
 )
 
 func main() {
 	app := &cli.App{
+		Name:        "tgsend",
+		Version:     VERSION,
+		Usage:       "Send a telegram message",
+		UsageText:   "tgsend [OPTIONS] TEXT ID...",
+		Description: "Send the given text to one or more chats identified by their id.\nTo find the id, forward a message from the chat to @getidsbot.",
+		HideHelp:    true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "token",
